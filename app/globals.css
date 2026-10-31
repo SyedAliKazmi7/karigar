@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-brand: #0b4f44;
+  --color-brand-dark: #0a3b33;
+  --color-brand-light: #e3f2ec;
+  --color-accent: #f5a524;
+  --color-ink: #11201c;
+  --color-muted: #5b6a65;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+}
+
+body {
+  background: #fafaf7;
+  color: var(--color-ink);
+}
+
+.hero-bg {
+  background:
+    radial-gradient(#cfe3da 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(#eaf5f0, #fafaf7);
+}
+
+/* Photo background for login, signup and join pages */
+.auth-bg {
+  background-color: #0b4f44;
+  background-image:
+    linear-gradient(90deg, rgba(10, 59, 51, 0.5), rgba(10, 59, 51, 0.1) 55%, rgba(10, 59, 51, 0)),
+    url("/karigar-bg.jpg");
+  background-size: cover;
+  background-position: 72% center;
+  background-repeat: no-repeat;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes float {
+  50% { transform: translateY(-10px); }
+}
+@keyframes ping-soft {
+  0% { box-shadow: 0 0 0 0 rgba(30, 170, 120, 0.5); }
+  100% { box-shadow: 0 0 0 10px rgba(30, 170, 120, 0); }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .anim-up { animation: fade-up 0.7s both; }
+  .anim-up-2 { animation: fade-up 0.7s 0.15s both; }
+  .anim-up-3 { animation: fade-up 0.7s 0.3s both; }
+  .float-a { animation: float 5s ease-in-out infinite; }
+  .float-b { animation: float 6s ease-in-out infinite 0.8s; }
+  .pulse-dot { animation: ping-soft 1.6s infinite; }
+  .spin-slow { animation: spin-slow 40s linear infinite; }
+}
+
+/* ---------- Loading animations ---------- */
+@keyframes kg-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes kg-shimmer {
+  to { background-position: -200% 0; }
+}
+@keyframes kg-soft-pulse {
+  50% { opacity: 0.55; transform: scale(0.97); }
+}
+
+.loader-wrap {
+  display: flex;
+  min-height: 60vh;
+  align-items: center;
+  justify-content: center;
+}
+.loader-inline {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 4px solid #e3f2ec;
+  border-top-color: #0b4f44;
+  animation: kg-spin 0.8s linear infinite;
+}
+.spinner-sm {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  vertical-align: -3px;
+  margin-right: 8px;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #eceee9 25%, #f7f8f5 50%, #eceee9 75%);
+  background-size: 200% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton { animation: kg-shimmer 1.4s ease-in-out infinite; }
+  .pulse-logo { animation: kg-soft-pulse 1.8s ease-in-out infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation-duration: 2.5s; }
+}
