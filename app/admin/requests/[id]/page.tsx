@@ -39,6 +39,7 @@ type Prov = {
   avg_rating: number | null;
   areas: string[];
   experience_years: number | null;
+  user_id: string | null;
 };
 
 const NEXT: Record<string, { to: string; label: string }> = {
@@ -85,7 +86,7 @@ export default function AdminRequestPage() {
         .order("created_at"),
       supabase
         .from("providers")
-        .select("id, full_name, whatsapp, avg_rating, areas, experience_years, provider_categories!inner(category_id)")
+        .select("id, full_name, whatsapp, avg_rating, areas, experience_years, user_id, provider_categories!inner(category_id)")
         .eq("status", "verified")
         .eq("available", true)
         .eq("provider_categories.category_id", request.category_id),
@@ -135,18 +136,15 @@ export default function AdminRequestPage() {
       request_id: id,
       provider_id: prov.id,
       provider_name: prov.full_name,
-      provider_rating: prov.avg_rating,
       price: amount,
       eta_minutes: minutes,
     });
-    if (error) {
-      setBusy(false);
-      return setError(error.message);
-    }
-    if (req && ["new", "dispatching"].includes(req.status)) {
-      await supabase.from("service_requests").update({ status: "offers_received" }).eq("id", id);
-    }
     setBusy(false);
+    if (error) {
+      return setError(
+        error.code === "23505" ? "This professional already has an offer on this request." : error.message
+      );
+    }
     setProvId("");
     setPrice("");
     setEta("");
@@ -193,6 +191,8 @@ export default function AdminRequestPage() {
   const closed = ["completed", "cancelled"].includes(req.status);
   const accepted = offers.find((o) => o.status === "accepted");
   const hasPin = req.latitude != null && req.longitude != null;
+  const free = provs.filter((p) => !offers.some((o) => o.provider_id === p.id));
+  const autoCount = provs.filter((p) => p.user_id).length;
 
   return (
     <main className="mx-auto max-w-[1200px] px-5 py-10 sm:px-8">
@@ -272,45 +272,66 @@ export default function AdminRequestPage() {
           {canOffer && (
             <div className="rounded-3xl border border-gray-200 bg-white p-6">
               <h2 className="text-xl font-extrabold">Suggested professionals</h2>
-              <p className="mb-4 text-sm text-muted">Verified and available for {req.categories?.name}.</p>
-              {provs.length === 0 && (
-                <p className="rounded-xl bg-[#fdefd0] p-4 text-sm text-[#6b4200]">
-                  No verified professionals for this service yet. Add them on the Providers page.
+              <p className="text-sm text-muted">Verified and available for {req.categories?.name}.</p>
+              {autoCount > 0 && (
+                <p className="mb-4 mt-2 rounded-xl bg-brand-light p-3 text-[13px] text-brand">
+                  {autoCount} professional{autoCount > 1 ? "s" : ""} with a login got an alert in the app and can send offers themselves.
+                  Use WhatsApp for the others.
                 </p>
               )}
-              {provs.map((p) => (
-                <div key={p.id} className="flex flex-wrap items-center gap-3 border-t border-gray-100 py-3 first:border-t-0">
-                  <div className="min-w-[160px] flex-1">
-                    <p className="font-bold">{p.full_name}</p>
-                    <p className="text-sm text-muted">
-                      {p.avg_rating ? `Rating ${p.avg_rating}` : "New"}
-                      {p.experience_years ? ` · ${p.experience_years} years` : ""}
-                      {p.areas.length ? ` · ${p.areas.join(", ")}` : ""}
-                    </p>
+              {provs.length === 0 && (
+                <p className="mt-4 rounded-xl bg-[#fdefd0] p-4 text-sm text-[#6b4200]">
+                  No verified professionals for this service yet. Verify applications or add them on the Providers page.
+                </p>
+              )}
+              {provs.map((p) => {
+                const sent = offers.find((o) => o.provider_id === p.id);
+                return (
+                  <div key={p.id} className="flex flex-wrap items-center gap-3 border-t border-gray-100 py-3 first:border-t-0">
+                    <div className="min-w-[160px] flex-1">
+                      <p className="font-bold">
+                        {p.full_name}
+                        {p.user_id ? (
+                          <span className="ml-2 rounded-full bg-[#d9efe8] px-2.5 py-0.5 text-xs font-bold text-[#0a4a40]">Gets app alerts</span>
+                        ) : (
+                          <span className="ml-2 rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-bold text-gray-600">WhatsApp only</span>
+                        )}
+                        {sent && (
+                          <span className="ml-2 rounded-full bg-[#fdefd0] px-2.5 py-0.5 text-xs font-bold text-[#6b4200]">
+                            Offered Rs {sent.price.toLocaleString()}
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-sm text-muted">
+                        {p.avg_rating ? `Rating ${p.avg_rating}` : "New"}
+                        {p.experience_years ? ` · ${p.experience_years} years` : ""}
+                        {p.areas.length ? ` · ${p.areas.join(", ")}` : ""}
+                      </p>
+                    </div>
+                    <a
+                      href={waLink(p)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-xl bg-[#1eaa78] px-4 py-2 text-sm font-bold text-white transition hover:-translate-y-0.5"
+                    >
+                      WhatsApp
+                    </a>
                   </div>
-                  <a
-                    href={waLink(p)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-xl bg-[#1eaa78] px-4 py-2 text-sm font-bold text-white transition hover:-translate-y-0.5"
-                  >
-                    WhatsApp
-                  </a>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
-          {canOffer && provs.length > 0 && (
+          {canOffer && free.length > 0 && (
             <form onSubmit={addOffer} className="rounded-3xl border border-gray-200 bg-white p-6">
               <h2 className="mb-1 text-xl font-extrabold">Record an offer</h2>
-              <p className="mb-4 text-sm text-muted">Enter the price the professional replied with.</p>
+              <p className="mb-4 text-sm text-muted">Enter the price a professional gave you on WhatsApp or by phone.</p>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div>
                   <label htmlFor="prov" className="mb-1.5 block text-sm font-bold">Professional</label>
                   <select id="prov" className={input} value={provId} onChange={(e) => setProvId(e.target.value)}>
                     <option value="">Choose</option>
-                    {provs.map((p) => (
+                    {free.map((p) => (
                       <option key={p.id} value={p.id}>{p.full_name}</option>
                     ))}
                   </select>

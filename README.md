@@ -1,39 +1,43 @@
 # Karigar
 
-**Hire trusted home service professionals in Pakistan.** Post a job, compare offers from verified plumbers, electricians, maids and more, and choose the one you like.
+**Hire trusted home service professionals in Pakistan.** Post a job, get offers from verified plumbers, electricians, maids and more, and choose the one you like. Think of it as an inDrive-style marketplace for home services.
 
 **Live demo:** https://karigar-inky.vercel.app
 
-Karigar is a full-stack web app built as a portfolio project. It is designed around a real problem: many skilled workers in Pakistan have limited literacy and smartphone use. So customers use a modern web app, while professionals are reached through WhatsApp and phone, and an admin team dispatches the work.
+Karigar is a full-stack web app built as a portfolio project. It is designed around a real problem: many skilled workers in Pakistan have limited literacy and smartphone use. So professionals can work from a simple dashboard **or** stay on WhatsApp, and an admin team dispatches the work and fills the gap.
 
 ![Karigar home page](docs/screenshots/01-home.png)
 
 ## How it works
 
 1. A customer posts a request (service, problem, address, budget, optional map pin and photos).
-2. The admin team sees it instantly on a live dashboard and contacts suitable professionals on WhatsApp.
-3. Professionals reply with a price. The team records each offer.
-4. The customer compares offers and accepts one.
-5. The team updates the job status. The customer sees it live, then rates the professional.
+2. Verified professionals in that service get an alert. They can send their own price from their dashboard.
+3. The admin team also sees the request instantly and can contact other professionals on WhatsApp, then record their prices.
+4. The customer gets a notification for every offer, compares them, and accepts or declines.
+5. Only the accepted professional receives the address, phone number, map pin and photos.
+6. The team updates the job status. The customer follows it live, then rates the professional.
 
 ## Features
 
 **Customers**
 - Sign up and log in
-- Create requests with a map pin, current location and up to 3 photos (compressed in the browser before upload)
-- See offers arrive in real time and accept one
-- Live job timeline, ratings, reviews and complaints
-
-**Admin and dispatchers**
-- Live dashboard with request counts and filters
-- Dispatch page: suggested verified professionals, pre-filled WhatsApp message, offer recording, status updates
-- Professionals management: add, verify, suspend, mark available
-- Complaints management
-- Pinned location opens in Maps, private photos are viewable
+- Post requests with a map pin, current location and up to 3 photos (compressed in the browser)
+- Live notifications and pop-ups when offers arrive
+- Accept or decline offers, follow a live job timeline, rate and review, report problems
 
 **Professionals**
-- Apply through a simple public form, no password or app needed
-- Applications arrive as "pending" and are verified by the team
+- Apply through a form that also creates their login
+- Admin verification before they see any job
+- Dashboard with open jobs in their services, availability switch, rating and job count
+- Send an offer (price and arrival time), withdraw it while pending
+- After acceptance: customer name, phone, address, map link and photos
+
+**Admin and dispatchers**
+- Live dashboard with filters and request counts
+- Dispatch page: suggested verified professionals, pre-filled WhatsApp message, offer recording, status updates
+- Professionals page: pending applications first, verify or suspend, link a login to a WhatsApp-only professional
+- Alerts for new requests, accepted offers, complaints and new applications
+- Complaints management, pinned location and private photos
 
 **Quality**
 - Mobile-first responsive design with a mobile menu
@@ -60,7 +64,7 @@ Karigar is a full-stack web app built as a portfolio project. It is designed aro
 | Styling | Tailwind CSS |
 | Database | Supabase (PostgreSQL) |
 | Auth | Supabase Auth (email and password) |
-| Realtime | Supabase Realtime (live offers and status) |
+| Realtime | Supabase Realtime (offers, status, notifications) |
 | File storage | Supabase Storage (private bucket, signed URLs) |
 | Maps | Leaflet with OpenStreetMap |
 | Hosting | Vercel |
@@ -69,15 +73,15 @@ Karigar is a full-stack web app built as a portfolio project. It is designed aro
 
 Security was treated as a feature, not an afterthought:
 
-- **Row Level Security** on every table. A customer can only read their own requests, offers, reviews and complaints.
-- **Roles** (customer, dispatcher, admin) are enforced in the database. A trigger blocks any attempt to change a role through the API.
-- **Least privilege:** table and column level grants, so the public API can only write the fields the app actually uses.
-- **Private photo storage:** files live in a private bucket, are limited to JPEG and 2 MB, and are shown through short-lived signed URLs. Each user can only upload into their own folder.
-- **Server-side rate limits** (database triggers) on new requests, complaints and professional applications.
-- **Validated inputs** both in the browser and with database constraints (length limits, formats, allowed values).
-- **Safe offer acceptance:** done through a database function that checks the offer belongs to the customer's own request.
+- **Row Level Security** on every table. A customer reads only their own requests, offers, reviews and complaints.
+- **Roles** (customer, dispatcher, admin) live in the database. A trigger blocks role changes through the API.
+- **Least privilege:** column-level grants and no public access to internal functions, so the API can write only the fields the app uses.
+- **Professionals see less before an offer is accepted.** Jobs reach them through database functions that return a summary only. Contact details, map pin and photos are released only to the accepted professional.
+- **Private photo storage:** JPEG only, 2 MB limit, short-lived signed URLs, per-user folders and a per-user file cap.
+- **Server-side rate limits** (database triggers) on requests, complaints, applications and offers.
+- **Validated inputs** in the browser and with database constraints.
+- **Safe offer decisions:** accepting or declining runs inside database functions that check ownership.
 - **Browser protections:** Content Security Policy, HSTS, `X-Frame-Options`, `nosniff` and a strict referrer policy (production builds).
-- Spam protection on the public professional form (hidden honeypot field plus rate limit).
 - Secrets are never committed. Only the public (publishable) Supabase key is used in the browser.
 
 ## Known limitations
@@ -86,17 +90,17 @@ This is a portfolio project, so some things are intentionally simple:
 
 - Payment is cash only. There is no online payment yet.
 - Email confirmation on signup is switched off. Turning it on needs a custom email provider and a domain.
-- Professionals do not log in. The admin team contacts them on WhatsApp and records their offers.
+- Notifications are in the app only. There are no push, SMS or WhatsApp messages sent automatically.
 - The interface is in English.
 
 ## Project structure
 
 ```
-app/            Pages (home, login, signup, join, requests, admin, legal pages)
-components/     Navbar, Footer, Logo, MapPicker, PhotoPicker, RequestPhotos, ...
-lib/            Supabase client, photo upload, status helpers, site details
-public/         Static assets
-docs/           SRS document and screenshots
+app/            Pages: home, auth, requests, provider, admin, legal pages
+components/     Navbar, notification bell, map and photo pickers, footer, ...
+lib/            Supabase client, photo upload, status and format helpers
+supabase/       schema.sql (reference database schema)
+docs/           SRS, SRS changes and screenshots
 ```
 
 ## Getting started
@@ -111,14 +115,15 @@ npm install
 
 1. Copy `.env.example` to `.env.local`.
 2. In your Supabase project, open **Project Settings → API Keys**, then copy the project URL and the publishable key into `.env.local`.
-3. Create the database: tables, Row Level Security policies, triggers, the `request-photos` storage bucket and the six service categories (the full SQL schema file is a planned addition to this repository).
-4. Start the app:
+3. Open the Supabase **SQL Editor** and run `supabase/schema.sql`. It is a reference schema for a fresh project: tables, security rules, functions, the private photo bucket and the six service categories.
+4. In **Authentication → Sign In / Providers**, switch off "Confirm email" for local testing.
+5. Start the app:
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000. To make your own account an admin, run this once in the Supabase SQL editor:
+Open http://localhost:3000. Sign up, then make your own account an admin by running this once in the SQL editor:
 
 ```sql
 update profiles set role = 'admin'
@@ -127,13 +132,13 @@ where id = (select id from auth.users where email = 'you@example.com');
 
 ## Documentation
 
-The full Software Requirements Specification (functional and non-functional requirements, data model, use cases, risks) is in [`docs/SRS.pdf`](docs/SRS.pdf).
+- Full Software Requirements Specification: [`docs/SRS.pdf`](docs/SRS.pdf)
+- Changes made after the SRS: [`docs/SRS-v1.1-changes.md`](docs/SRS-v1.1-changes.md)
 
 ## Roadmap
 
-- Professional login and dashboard so providers can send offers themselves
-- Online payments (JazzCash, Easypaisa)
 - Email confirmation with a custom email provider
+- Online payments (JazzCash, Easypaisa)
 - Automated WhatsApp messages (WhatsApp Business API)
 - Demo mode with sample data
 - Urdu interface

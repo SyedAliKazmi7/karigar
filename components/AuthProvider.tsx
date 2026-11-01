@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 
@@ -10,18 +10,31 @@ type Profile = {
   role: "customer" | "dispatcher" | "admin";
 };
 
+export type ProviderInfo = {
+  id: number;
+  full_name: string;
+  status: "pending" | "verified" | "suspended";
+  available: boolean;
+  avg_rating: number | null;
+  jobs_completed: number;
+};
+
 type AuthState = {
   user: User | null;
   profile: Profile | null;
+  provider: ProviderInfo | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshProvider: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState>({
   user: null,
   profile: null,
+  provider: null,
   loading: true,
   signOut: async () => {},
+  refreshProvider: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -29,20 +42,27 @@ export const useAuth = () => useContext(AuthContext);
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [provider, setProvider] = useState<ProviderInfo | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshProvider = useCallback(async () => {
+    const { data } = await supabase.rpc("my_provider");
+    const row = (Array.isArray(data) ? data[0] : null) as ProviderInfo | null;
+    setProvider(row ?? null);
+  }, []);
 
   useEffect(() => {
     async function load(u: User | null) {
       setUser(u);
       if (u) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("full_name, phone, role")
-          .eq("id", u.id)
-          .maybeSingle();
-        setProfile((data as Profile | null) ?? null);
+        const [p] = await Promise.all([
+          supabase.from("profiles").select("full_name, phone, role").eq("id", u.id).maybeSingle(),
+          refreshProvider(),
+        ]);
+        setProfile((p.data as Profile | null) ?? null);
       } else {
         setProfile(null);
+        setProvider(null);
       }
       setLoading(false);
     }
@@ -51,14 +71,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setTimeout(() => load(session?.user ?? null), 0);
     });
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [refreshProvider]);
 
   async function signOut() {
     await supabase.auth.signOut();
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ user, profile, provider, loading, signOut, refreshProvider }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,18 +7,6 @@ import Logo from "./Logo";
 import NotificationBell from "./NotificationBell";
 import { useAuth } from "./AuthProvider";
 
-const links = [
-  { href: "/#services", label: "Services" },
-  { href: "/#how", label: "How it works" },
-  { href: "/requests", label: "My requests" },
-];
-
-const staffLinks = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/providers", label: "Providers" },
-  { href: "/admin/complaints", label: "Complaints" },
-];
-
 const outline =
   "rounded-xl border border-gray-300 px-5 py-2.5 text-[15px] font-bold text-brand transition hover:bg-gray-50";
 const cta =
@@ -26,11 +14,31 @@ const cta =
 
 export default function Navbar() {
   const router = useRouter();
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, provider, loading, signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const isStaff = profile?.role === "admin" || profile?.role === "dispatcher";
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
   const close = () => setOpen(false);
+
+  const items: { href: string; label: string; brand?: boolean }[] = [
+    { href: "/#services", label: "Services" },
+    { href: "/#how", label: "How it works" },
+    { href: "/requests", label: "My requests" },
+  ];
+  if (provider) {
+    items.push({
+      href: "/provider",
+      label: provider.status === "verified" ? "Provider dashboard" : "Provider profile",
+      brand: true,
+    });
+  }
+  if (isStaff) {
+    items.push(
+      { href: "/admin", label: "Dashboard", brand: true },
+      { href: "/admin/providers", label: "Providers", brand: true },
+      { href: "/admin/complaints", label: "Complaints", brand: true }
+    );
+  }
 
   async function handleLogout() {
     close();
@@ -47,21 +55,13 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <ul className="hidden flex-1 gap-5 whitespace-nowrap text-[15px] font-semibold text-muted xl:flex">
-          {links.map((l) => (
+          {items.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} className="transition hover:text-brand">
+              <Link href={l.href} className={l.brand ? "text-brand transition hover:underline" : "transition hover:text-brand"}>
                 {l.label}
               </Link>
             </li>
           ))}
-          {isStaff &&
-            staffLinks.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className="text-brand transition hover:underline">
-                  {l.label}
-                </Link>
-              </li>
-            ))}
         </ul>
 
         {/* Right side */}
@@ -108,7 +108,7 @@ export default function Navbar() {
       {open && (
         <div id="mobile-menu" className="border-t border-gray-200 bg-white px-5 pb-6 pt-3 shadow-lg sm:px-8 xl:hidden">
           <ul className="text-[17px] font-semibold">
-            {[...links, ...(isStaff ? staffLinks : [])].map((l) => (
+            {items.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} onClick={close} className="block rounded-xl px-3 py-3 transition hover:bg-gray-50">
                   {l.label}

@@ -21,8 +21,8 @@ export default function PrivacyPage() {
           <li><b>Account details:</b> your name, mobile number, email address and password. Your password is stored in a protected form by our authentication provider and we cannot read it.</li>
           <li><b>Request details:</b> the service you need, a description of the problem, your address, city, preferred time and budget.</li>
           <li><b>Optional details:</b> a pin on a map and up to three photos of the problem. You choose whether to add these.</li>
-          <li><b>Activity:</b> offers you receive, job status updates, ratings, reviews and complaints.</li>
-          <li><b>Professionals:</b> name, WhatsApp number, services, areas, experience and any details we collect to verify them.</li>
+          <li><b>Activity:</b> offers you send or receive, job status updates, ratings, reviews, complaints and the notifications we show you in the app.</li>
+          <li><b>Professionals:</b> name, WhatsApp number, login email, services, areas, experience and any details we collect to verify them, plus the offers they send and the ratings they receive.</li>
           <li><b>Technical data:</b> basic information such as device and browser type, which our hosting and database providers may record to keep the service running.</li>
         </ul>
       </section>
@@ -31,7 +31,8 @@ export default function PrivacyPage() {
         <h2>3. How we use your information</h2>
         <ul>
           <li>To create your account and run your requests.</li>
-          <li>To find suitable professionals and contact them about your job.</li>
+          <li>To show jobs to suitable professionals and to show offers to customers.</li>
+          <li>To send you notifications about new offers, new jobs, offer decisions and job progress.</li>
           <li>To call or message you about your request, offers and visit.</li>
           <li>To verify professionals, handle complaints and keep customers and professionals safe.</li>
           <li>To improve the service and to meet legal obligations.</li>
@@ -41,8 +42,9 @@ export default function PrivacyPage() {
       <section>
         <h2>4. Who can see your information</h2>
         <ul>
-          <li><b>Our team</b> (administrators and dispatchers) can see your requests, contact details, location pin and photos so that they can manage your job.</li>
-          <li><b>Professionals</b> receive only the job details needed to quote a price (service, problem, city and budget). Your phone number and exact address are shared only after you accept an offer, and only as needed to complete the visit.</li>
+          <li><b>Our team</b> (administrators and dispatchers) can see requests, contact details, location pins and photos so that they can manage jobs.</li>
+          <li><b>Professionals</b> who match a request can see only the job details needed to quote a price (service, problem, city and budget). Your name, phone number, exact address, map pin and photos are shared only with the professional whose offer you accept, and only as needed to complete the visit.</li>
+          <li><b>Customers</b> see a professional&apos;s name, rating, price and arrival time on their offer. A professional&apos;s phone number is not shown to customers.</li>
           <li><b>Service providers</b> that help us run {SITE.name}: our database, authentication and file storage provider (Supabase), our hosting provider, OpenStreetMap (map display) and WhatsApp (messages to professionals).</li>
           <li>We do not sell your personal information.</li>
         </ul>
@@ -51,8 +53,9 @@ export default function PrivacyPage() {
       <section>
         <h2>5. Photos and location</h2>
         <p>
-          Photos are kept in private storage. They are visible only to you and our team, and they
-          are never published. Your map pin is optional and is shown only to you and our team.
+          Photos are kept in private storage. They are visible only to you, our team and the
+          professional whose offer you accept. They are never published. Your map pin is optional
+          and follows the same rule.
         </p>
       </section>
 
@@ -68,9 +71,9 @@ export default function PrivacyPage() {
       <section>
         <h2>7. Security</h2>
         <p>
-          We use encrypted connections, access controls that limit each customer to their own
-          data, and private file storage. No online service is completely secure, but we work to
-          protect your information.
+          We use encrypted connections, access controls that limit each user to their own data,
+          limits on repeated actions to prevent abuse, and private file storage. No online service
+          is completely secure, but we work to protect your information.
         </p>
       </section>
 
