@@ -69,6 +69,7 @@ export default function RequestDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [busyAction, setBusyAction] = useState<"accept" | "decline" | null>(null);
 
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -125,9 +126,23 @@ export default function RequestDetailPage() {
 
   async function accept(offerId: number) {
     setBusyId(offerId);
+    setBusyAction("accept");
     setError("");
     const { error } = await supabase.rpc("accept_offer", { p_offer_id: offerId });
     setBusyId(null);
+    setBusyAction(null);
+    if (error) setError(error.message);
+    else load();
+  }
+
+  async function decline(offerId: number) {
+    if (!confirm("Decline this offer?")) return;
+    setBusyId(offerId);
+    setBusyAction("decline");
+    setError("");
+    const { error } = await supabase.rpc("decline_offer", { p_offer_id: offerId });
+    setBusyId(null);
+    setBusyAction(null);
     if (error) setError(error.message);
     else load();
   }
@@ -327,13 +342,22 @@ export default function RequestDetailPage() {
                   </div>
                   <p className="text-2xl font-extrabold">Rs {o.price.toLocaleString()}</p>
                   {canAccept && (
-                    <button
-                      onClick={() => accept(o.id)}
-                      disabled={busyId !== null}
-                      className="h-[46px] rounded-xl bg-brand px-6 font-bold text-white transition hover:bg-brand-dark disabled:opacity-60"
-                    >
-                      {busyId === o.id ? (<><span className="spinner spinner-sm" />Accepting...</>) : "Accept offer"}
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => decline(o.id)}
+                        disabled={busyId !== null}
+                        className="h-[46px] rounded-xl border border-gray-300 px-5 font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                      >
+                        {busyId === o.id && busyAction === "decline" ? (<><span className="spinner spinner-sm" />Declining...</>) : "Decline"}
+                      </button>
+                      <button
+                        onClick={() => accept(o.id)}
+                        disabled={busyId !== null}
+                        className="h-[46px] rounded-xl bg-brand px-6 font-bold text-white transition hover:bg-brand-dark disabled:opacity-60"
+                      >
+                        {busyId === o.id && busyAction === "accept" ? (<><span className="spinner spinner-sm" />Accepting...</>) : "Accept offer"}
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}

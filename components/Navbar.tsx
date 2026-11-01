@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "./Logo";
+import NotificationBell from "./NotificationBell";
 import { useAuth } from "./AuthProvider";
 
 const links = [
@@ -63,41 +64,44 @@ export default function Navbar() {
             ))}
         </ul>
 
-        {/* Desktop actions */}
-        <div className="ml-auto hidden shrink-0 items-center gap-3 whitespace-nowrap xl:flex">
-          {!loading && user ? (
-            <>
-              <span className="hidden text-[15px] font-semibold 2xl:inline">Hi, {firstName}</span>
-              <button onClick={handleLogout} className={outline}>
-                Log out
-              </button>
-            </>
-          ) : (
-            !loading && (
-              <>
-                <Link href="/login" className={outline}>Log in</Link>
-                <Link href="/signup" className={outline}>Sign up</Link>
-              </>
-            )
-          )}
-          <Link href="/requests/new" className={cta}>
-            Request a service
-          </Link>
-        </div>
+        {/* Right side */}
+        <div className="ml-auto flex shrink-0 items-center gap-3 whitespace-nowrap">
+          <NotificationBell />
 
-        {/* Mobile menu button */}
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? "Close menu" : "Open menu"}
-          className="ml-auto flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 text-brand xl:hidden"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-          </svg>
-        </button>
+          <div className="hidden items-center gap-3 xl:flex">
+            {!loading && user ? (
+              <>
+                <span className="hidden text-[15px] font-semibold 2xl:inline">Hi, {firstName}</span>
+                <button onClick={handleLogout} className={outline}>
+                  Log out
+                </button>
+              </>
+            ) : (
+              !loading && (
+                <>
+                  <Link href="/login" className={outline}>Log in</Link>
+                  <Link href="/signup" className={outline}>Sign up</Link>
+                </>
+              )
+            )}
+            <Link href="/requests/new" className={cta}>
+              Request a service
+            </Link>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 text-brand xl:hidden"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu */}
