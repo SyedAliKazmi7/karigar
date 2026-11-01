@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
@@ -14,7 +14,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const r = new URLSearchParams(window.location.search).get("registered");
+    if (r === "1") setNotice("Account created. Please log in with your email and password.");
+    if (r === "confirm") setNotice("Account created. Please check your email to confirm, then log in.");
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,6 +41,12 @@ export default function LoginPage() {
       <div className="anim-up mx-auto max-w-md rounded-3xl border border-white/60 bg-white/95 p-8 shadow-2xl backdrop-blur lg:ml-[8%] lg:mr-auto">
         <h1 className="text-3xl font-extrabold tracking-tight">Welcome back</h1>
         <p className="mt-2 text-muted">Log in to manage your requests.</p>
+
+        {notice && (
+          <p role="status" className="mt-5 rounded-xl bg-brand-light p-3 text-sm font-semibold text-brand">
+            {notice}
+          </p>
+        )}
 
         <form onSubmit={onSubmit} noValidate>
           <label htmlFor="email" className={label}>Email</label>

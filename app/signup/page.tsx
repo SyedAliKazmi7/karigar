@@ -13,7 +13,6 @@ export default function SignupPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", phone: "", email: "", password: "" });
   const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -22,7 +21,6 @@ export default function SignupPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setInfo("");
     if (form.name.trim().length < 2) return setError("Please enter your full name.");
     if (!/^03\d{9}$/.test(form.phone.trim()))
       return setError("Enter a valid mobile number, for example 03001234567.");
@@ -34,11 +32,20 @@ export default function SignupPage() {
       password: form.password,
       options: { data: { full_name: form.name.trim(), phone: form.phone.trim() } },
     });
-    setBusy(false);
 
-    if (error) return setError(error.message);
-    if (data.session) router.push("/");
-    else setInfo("Account created. Please check your email to confirm, then log in.");
+    if (error) {
+      setBusy(false);
+      return setError(error.message);
+    }
+
+    if (data.session) {
+      // Email confirmation is off, so Supabase logged the user in. Log out so they sign in on purpose.
+      await supabase.auth.signOut();
+      router.push("/login?registered=1");
+    } else {
+      // Email confirmation is on: the user must click the link in their email first.
+      router.push("/login?registered=confirm");
+    }
   }
 
   return (
@@ -62,7 +69,6 @@ export default function SignupPage() {
           <p className="mt-1.5 text-xs text-muted">At least 8 characters.</p>
 
           {error && <p className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
-          {info && <p className="mt-4 rounded-xl bg-brand-light p-3 text-sm font-semibold text-brand">{info}</p>}
 
           <button
             type="submit"
