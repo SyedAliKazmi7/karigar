@@ -2,6 +2,8 @@
 
 **Hire trusted home service professionals in Pakistan.** Post a job, compare offers from verified plumbers, electricians, maids and more, and choose the one you like.
 
+**Live demo:** https://karigar-inky.vercel.app
+
 Karigar is a full-stack web app built as a portfolio project. It is designed around a real problem: many skilled workers in Pakistan have limited literacy and smartphone use. So customers use a modern web app, while professionals are reached through WhatsApp and phone, and an admin team dispatches the work.
 
 ![Karigar home page](docs/screenshots/01-home.png)
@@ -61,7 +63,7 @@ Karigar is a full-stack web app built as a portfolio project. It is designed aro
 | Realtime | Supabase Realtime (live offers and status) |
 | File storage | Supabase Storage (private bucket, signed URLs) |
 | Maps | Leaflet with OpenStreetMap |
-| Hosting | Vercel (planned) |
+| Hosting | Vercel |
 
 ## Security
 
@@ -78,6 +80,15 @@ Security was treated as a feature, not an afterthought:
 - Spam protection on the public professional form (hidden honeypot field plus rate limit).
 - Secrets are never committed. Only the public (publishable) Supabase key is used in the browser.
 
+## Known limitations
+
+This is a portfolio project, so some things are intentionally simple:
+
+- Payment is cash only. There is no online payment yet.
+- Email confirmation on signup is switched off. Turning it on needs a custom email provider and a domain.
+- Professionals do not log in. The admin team contacts them on WhatsApp and records their offers.
+- The interface is in English.
+
 ## Project structure
 
 ```
@@ -93,7 +104,7 @@ docs/           SRS document and screenshots
 You need Node.js 20 or newer and a free [Supabase](https://supabase.com) project.
 
 ```bash
-git clone https://github.com/[your-username]/karigar.git
+git clone https://github.com/SyedAliKazmi7/karigar.git
 cd karigar
 npm install
 ```
@@ -122,6 +133,7 @@ The full Software Requirements Specification (functional and non-functional requ
 
 - Professional login and dashboard so providers can send offers themselves
 - Online payments (JazzCash, Easypaisa)
+- Email confirmation with a custom email provider
 - Automated WhatsApp messages (WhatsApp Business API)
 - Demo mode with sample data
 - Urdu interface
